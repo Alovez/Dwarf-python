@@ -39,6 +39,13 @@ class Node(object):
             self.set_special(sum([x for x in self.cells.itervalues()]))
         return self.is_leaf
 
+    def insert_cell(self, cell):
+        self.cells.update(cell)
+        self.closed = False
+
+    def check_exist(self, key):
+        return self.cells.get(key) is not None
+
     def merge_node(self, node):
         self.cells.update(node.cells)
         self.closed = self.closed and node.closed
@@ -261,13 +268,40 @@ def create_data_model():
     root.set_special(suffix_coalesce(list(root.cells.itervalues())))
     return root
 
+def insert_tuple(new_tuple, root):
+    prefix = []
+    home_node = root
+    for key in new_tuple:
+        if root.check_exist(key):
+            prefix.append(key)
+            home_node = root.cells.get(key)
+        else:
+            break
+    new_node = create_new_nodes(home_node, new_tuple, prefix)
+    write_special_of_leaves(root)
+    all_open_node = []
+    all_open_node = root.get_open_node(all_open_node)
+    for node in all_open_node:
+        node.set_special(suffix_coalesce(list(node.cells.itervalues())))
+    root.set_special(suffix_coalesce(list(root.cells.itervalues())))
 
 if __name__ == '__main__':
     root = create_data_model()
     while True:
-        Store = raw_input("Store: ")
-        Customer = raw_input("Customer: ")
-        Product = raw_input("Product: ")
-        f = Filters([Store, Customer, Product])
-        r = root.get_value(f)
-        print r
+        command = raw_input("command: ")
+        if command == 'q':
+            break
+        elif command == 'query':
+            Store = raw_input("Store: ")
+            Customer = raw_input("Customer: ")
+            Product = raw_input("Product: ")
+            f = Filters([Store, Customer, Product])
+            r = root.get_value(f)
+            print r
+        elif command == 'insert':
+            Store = raw_input("Store: ")
+            Customer = raw_input("Customer: ")
+            Product = raw_input("Product: ")
+            Price = raw_input("Price: ")
+            insert_tuple([Store, Customer, Product, Price], root)
+       
